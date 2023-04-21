@@ -1,36 +1,46 @@
+import { createBoard } from "./createBoard"
+
 const board = document.querySelector(".board")
 
 const BOARD_ROWS = 16
 const BOARD_COLS = 16
 const BOARD_MINES = 40
 
-function createBoard(BOARD_HEIGHT, BOARD_WIDTH) {
-  // TODO: REPAIR CHANGING BOARD DIMENSIONS
-  let a = 1
-  for (let i = 1; i <= BOARD_ROWS; i++) {
-    for (let j = 1; j <= BOARD_COLS; j++) {
-      const div = document.createElement("div")
-      div.classList.add("square")
-      div.setAttribute("id", a)
-      div.setAttribute("data-row", i)
-      div.setAttribute("data-col", j)
-      board.appendChild(div)
-      a++
-    }
-  }
+let root = document.documentElement
+root.style.setProperty("--cols", BOARD_COLS)
+root.style.setProperty("--rows", BOARD_ROWS)
+
+const result = createBoard(BOARD_ROWS, BOARD_COLS, BOARD_MINES)
+result.forEach((item) => {
+  item.forEach((itemInside) => {
+    const div = document.createElement("div")
+    div.dataset.status = itemInside.status
+    div.dataset.mine = itemInside.mine
+    div.addEventListener("click", revealSquare)
+    div.addEventListener("contextmenu", markSquare)
+    board.append(div)
+  })
+})
+
+function markSquare(e) {
+  e.preventDefault()
+  e.target.dataset.status = "marked"
 }
 
-function maskSquares() {
-  const squares = document.querySelectorAll(".square")
-  squares.forEach((square) => {
-    square.classList.add("mask")
-  })
+function revealSquare(e) {
+  if (e.target.dataset.mine === "true") {
+    e.target.dataset.status = "mine"
+  } else {
+    e.target.dataset.status = "number"
+    e.target.innerText = getNumberOfNearbyMines(e.target)
+  }
+  // if (e.target.dataset.mine) {
+  //   e.target.dataset.status = "mine"
+  // }
 }
-function removeMask() {
-  const squares = document.querySelectorAll(".square")
-  squares.forEach((square) =>
-    square.addEventListener("click", handleMaskRemoval)
-  )
+
+function getNumberOfNearbyMines() {
+  console.log("ok")
 }
 
 function getNeighbours(id) {
@@ -73,34 +83,6 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max)
 }
 
-function minesPositions() {
-  const drawedNumbers = []
-  while (drawedNumbers.length < BOARD_MINES) {
-    const number = getRandomInt(BOARD_COLS * BOARD_ROWS)
-    if (!drawedNumbers.includes(number)) {
-      drawedNumbers.push(number)
-    }
-  }
-  return drawedNumbers
-}
-
-createBoard(16, 16)
-
-maskSquares()
-removeMask()
-
-function markPositions() {
-  const drawedNumbers = minesPositions()
-  const squares = document.querySelectorAll(".square")
-  squares.forEach((element) => {
-    if (drawedNumbers.includes(+element.id)) {
-      element.classList.add("mine")
-    }
-  })
-}
-
-markPositions()
-
 document.addEventListener("contextmenu", setUserMine)
 
 function setUserMine(e) {
@@ -135,4 +117,4 @@ function markNumbers() {
     }
   }
 }
-markNumbers()
+// markNumbers()
